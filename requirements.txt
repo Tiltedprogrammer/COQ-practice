@@ -1,0 +1,5 @@
+z3-solver
+wheel
+python-sat[pblib,aiger]
+python-sat
+sympy
