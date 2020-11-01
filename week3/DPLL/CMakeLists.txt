@@ -3,6 +3,8 @@ project(DPLL LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include;${CMAKE_CURRENT_SOURCE_DIR}/CppCmb/")
 message("${INCLUDE_DIRECTORIES}")
 

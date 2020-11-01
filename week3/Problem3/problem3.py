@@ -31,6 +31,7 @@ def construct_formulaCNF(k,v):
                 edges[(i,j)] = counter
                 counter += 1  
     # for each triangle:
+    print(edges)
 
     for c in range(k):
         for i in range(v):
@@ -59,12 +60,13 @@ def max_clique(num_colors):
 
 if __name__ == "__main__":
     
-    k = int(sys.argv[1])
-    assert(k > 0)
-    print(f"Quering max clique size for {k} colors")
-    start = time.perf_counter_ns()
-    print(max_clique(k))
-    end = time.perf_counter_ns()
-    print(f"time: {int((end-start) / 1_000_000)} ms")
+    # k = int(sys.argv[1])
+    # assert(k > 0)
+    # print(f"Quering max clique size for {k} colors")
+    # start = time.perf_counter_ns()
+    # print(max_clique(k))
+    construct_formulaCNF(2,5);
+    # end = time.perf_counter_ns()
+    # print(f"time: {int((end-start) / 1_000_000)} ms")
     
 

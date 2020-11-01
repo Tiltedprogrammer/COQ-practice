@@ -136,6 +136,9 @@ AST* do_op(AST* l, char ch, AST* r) {
         auto phi = new AST(AST_op::lor,l,r);
         return phi;
     }
+    default:{
+        throw new std::runtime_error("Unexaustive pattern matching");
+    }
     }
 }
 

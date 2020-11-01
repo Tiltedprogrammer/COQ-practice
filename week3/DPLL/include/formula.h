@@ -5,6 +5,12 @@
 #include <set>
 #include <stdexcept>
 
+enum RESULT {SAT,UNSAT};
+
+
+
+typedef std::set<int> interpretation;
+
 enum Connective {wedge, vee};
 
 typedef std::set<std::set<int>> CNF;
@@ -14,6 +20,8 @@ class Formula {
         enum Type{neg, binary, prop};
         Type type;
         
+        virtual RESULT satisfies(interpretation& I) const = 0;
+
         virtual void print(std::ostream& os) const = 0;
         
         friend std::ostream& operator<<(std::ostream& os, const Formula& f) {
@@ -37,6 +45,17 @@ class Prop : public Formula {
             }
         }
 
+        virtual RESULT satisfies(interpretation& I) const {
+            if (I.find(prop_var) != I.end()) {
+                return SAT;
+            }
+            else if (I.find(-prop_var) != I.end()) {
+                return UNSAT;
+            } else {
+                throw new std::runtime_error("Interpretation is not total");
+            }
+        }
+
         virtual void print(std::ostream& os) const {
             os << prop_var;
         }
@@ -50,6 +69,12 @@ class Negation : public Formula {
         
         Negation(Formula* f_) : Formula(neg), f(f_){}
 
+        virtual RESULT satisfies(interpretation& I) const {
+            
+            if(f->satisfies(I) == SAT) return UNSAT;
+            else return SAT;
+        
+        }
         virtual void print(std::ostream& os) const {
             os << "!";
             f->print(os);
@@ -72,6 +97,18 @@ class Binary : public Formula {
         Binary(Formula* left, Formula* right, Connective conn) :
             Formula(binary), l(left), r(right), op(conn) {}
 
+        virtual RESULT satisfies(interpretation& I) const {
+            switch (op)
+            {
+            case Connective::vee:
+                if ((l->satisfies(I) == SAT) || (r->satisfies(I) == SAT)) return SAT;
+                else return UNSAT;
+            case Connective::wedge:
+                if ((l->satisfies(I) == SAT) && (r->satisfies(I) == SAT)) return SAT;
+                else return UNSAT;
+            }
+        }
+        
         virtual void print(std::ostream& os) const {
             os << "(";
             l->print(os);

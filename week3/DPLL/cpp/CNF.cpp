@@ -1,4 +1,10 @@
 #include "CNFTransformer.h"
+#include <sstream>
+
+
+const CNF& CNFTransformer::get_cnf() const{
+    return cnf;
+}
 
 int CNFTransformer::get_max_prop(Formula* f){
 
@@ -69,9 +75,9 @@ std::pair<int,CNF> CNFTransformer::transform_helper(Formula* f,int& max_prop) {
             max_prop += 1;
 
 
-            right.second.insert(std::set({-max_prop,left.first}));
-            right.second.insert(std::set({-max_prop,right.first}));
-            right.second.insert(std::set({max_prop,-right.first,-left.first}));
+            right.second.insert(std::set<int>({-max_prop,left.first}));
+            right.second.insert(std::set<int>({-max_prop,right.first}));
+            right.second.insert(std::set<int>({max_prop,-right.first,-left.first}));
             
             return std::pair<int,CNF>(max_prop,right.second); 
         }
@@ -85,9 +91,9 @@ std::pair<int,CNF> CNFTransformer::transform_helper(Formula* f,int& max_prop) {
             }
             max_prop += 1;
 
-            right.second.insert(std::set({max_prop,-left.first}));
-            right.second.insert(std::set({max_prop,-right.first}));
-            right.second.insert(std::set({-max_prop,right.first,left.first}));
+            right.second.insert(std::set<int>({max_prop,-left.first}));
+            right.second.insert(std::set<int>({max_prop,-right.first}));
+            right.second.insert(std::set<int>({-max_prop,right.first,left.first}));
             
             return std::pair<int,CNF>(max_prop,right.second);
         }
@@ -103,10 +109,81 @@ CNF CNFTransformer::transform(Formula* f) {
 
     int max_prop = get_max_prop(f);
     auto res = transform_helper(f,max_prop);
-    res.second.insert(std::set({res.first}));
+    res.second.insert(std::set<int>({res.first}));
     return res.second;
 }
 
 CNFTransformer::CNFTransformer(Formula* f){
     cnf = transform(f);
+}
+
+std::string trim(const std::string& str,
+                 const std::string& whitespace = " \t")
+{
+    const auto strBegin = str.find_first_not_of(whitespace);
+    if (strBegin == std::string::npos)
+        return ""; // no content
+
+    const auto strEnd = str.find_last_not_of(whitespace);
+    const auto strRange = strEnd - strBegin + 1;
+
+    return str.substr(strBegin, strRange);
+}
+
+CNFTransformer::CNFTransformer(std::ifstream& is) {
+    
+    //skip comments
+    cnf = std::set<std::set<int>>();
+    if(!is) {
+        throw new std::runtime_error("Ifstream is not opened");
+    }
+    std::string line;
+    while (std::getline(is,line))
+    {   
+        std::string trimmed = trim(line);
+
+        if (trimmed.rfind("c", 0) == 0) {
+            continue;
+        } else if (trimmed.rfind("p",0) == 0) {
+            continue;
+        }  else {
+            
+            int i;
+
+            std::stringstream ss (trimmed);
+            std::set<int> clause;
+            while (ss >> i)
+            {
+                if(i != 0) {
+                   clause.insert(i); 
+                } else {
+                    cnf.insert(clause);
+                    clause.clear();
+                }
+            }
+            
+        }
+    }
+    
+}
+
+
+std::ostream& operator<<(std::ostream& out, const RESULT value){
+    const char* s = 0;
+#define PROCESS_VAL(p) case(p): s = #p; break;
+    switch(value){
+        PROCESS_VAL(SAT);     
+        PROCESS_VAL(UNSAT);     
+    }
+#undef PROCESS_VAL
+
+    return out << s;
+}
+
+std::ostream& operator<<(std::ostream& out, const interpretation model){
+    out << "{ ";
+    for (auto e : model) {
+        out << e << " ";
+    }
+    return out << "}\n";
 }
