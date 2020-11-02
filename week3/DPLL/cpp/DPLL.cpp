@@ -10,12 +10,35 @@ DPLL_solver::DPLL_solver(){
     model = std::set<int>();
 };
 
+DPLL_solver::DPLL_solver(const DPLL_solver& another) {
+    
+    cnf = another.cnf;
+    state = another.state;
+    atoms = another.atoms;
+    model = another.model;
+    max_literal = another.max_literal;
+
+}
+
+DPLL_solver DPLL_solver::operator=(const DPLL_solver& another) {
+    
+    cnf = another.cnf;
+    state = another.state;
+    atoms = another.atoms;
+    model = another.model;
+    max_literal = another.max_literal;
+
+}
+
 void DPLL_solver::add_clause(std::set<int> clause) {
     
     cnf.insert(clause);
     state = STATE::UNDERFINED_STATE;
     for (auto i: clause) {
         atoms.insert(std::abs(i));
+        if(abs(i) > max_literal) {
+            max_literal = abs(i);
+        }
     }
 }
 
@@ -26,6 +49,28 @@ void DPLL_solver::add_clause(std::set<std::set<int>> clauses) {
         add_clause(s);
     }
 }
+
+void DPLL_solver::add_clause(std::string clause) {
+    
+    auto prop = Proposition(clause);
+    auto cnf = CNFTransformer(prop.get(),max_literal).get_cnf();
+    add_clause(cnf);
+}
+
+const CNF& DPLL_solver::get_clauses() const {
+    return cnf;
+}
+
+void DPLL_solver::remove_clause(std::set<int> clause) {
+    if (cnf.erase(clause)) max_literal = update_max_literal();
+}
+        
+void DPLL_solver::remove_clause(std::set<std::set<int>> clauses) {
+    for(auto& clause : clauses) {
+        remove_clause(clause);
+    }
+}
+
 
 // void DPLL_solver::add_clause(const std::set<int>& clause) {
     
@@ -239,6 +284,22 @@ RESULT DPLL_solver::satisfies(interpretation& I) const {
 
 const std::set<int>& DPLL_solver::get_atoms() const{
     return atoms;
+}
+
+int DPLL_solver::get_max_literal() const {
+    return max_literal;
+}
+
+int DPLL_solver::update_max_literal() {
+    int max_literal_ = 0;
+    for (auto& disj : cnf) {
+        for (auto literal : disj) {
+            if (std::abs(literal) > max_literal_) {
+                max_literal_ = std::abs(literal); 
+            }
+        }
+    }
+    return max_literal_;
 }
 
 // void DPLL_solver::remove_absorbed(){

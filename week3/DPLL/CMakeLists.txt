@@ -44,6 +44,7 @@ endif()
 
 
 add_subdirectory(cpp)
+add_subdirectory(Problem4)
 
 
 enable_testing()

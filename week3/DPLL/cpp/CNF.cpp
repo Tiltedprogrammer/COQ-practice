@@ -113,6 +113,18 @@ CNF CNFTransformer::transform(Formula* f) {
     return res.second;
 }
 
+CNF CNFTransformer::transform(Formula* f, int max_prop) {
+
+    auto res = transform_helper(f,max_prop);
+    res.second.insert(std::set<int>({res.first}));
+    return res.second;
+}
+
+CNFTransformer::CNFTransformer(Formula* f, int max_prop){
+    cnf = transform(f,max_prop);
+}
+
+
 CNFTransformer::CNFTransformer(Formula* f){
     cnf = transform(f);
 }

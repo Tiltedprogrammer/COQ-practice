@@ -10,6 +10,7 @@
 class CNFTransformer{
     public:
         CNFTransformer(Formula* f);
+        CNFTransformer(Formula* f, int max_literal);
         CNFTransformer(std::ifstream& is);
         
         static int get_max_prop(Formula* f);
@@ -32,6 +33,7 @@ class CNFTransformer{
     private:
         CNF cnf;
         CNF transform(Formula* f);
+        CNF transform(Formula* f,int max_prop);
         std::pair<int,CNF> transform_helper(Formula*f,int& max_prop);
 };
 
